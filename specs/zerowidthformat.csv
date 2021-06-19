@@ -1,0 +1,4 @@
+"column name", width, datatype
+name, 10, str
+empty, 0, str
+valid, 1, bool
