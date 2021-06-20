@@ -24,8 +24,11 @@ def get_data_object(idx, dataline, spec_list):
 		data_width = spec.get_width()
 		data_in_string = dataline[dataline_idx:dataline_idx + data_width]
 		dataline_idx += data_width
-		value = convert_string_to_type(data_in_string, spec.get_type())
-		obj[spec.get_name()] = value
+		value, conversion_err = convert_string_to_type(data_in_string, spec.get_type())
+		if conversion_err:
+			print(conversion_err)
+		else:
+			obj[spec.get_name()] = value
 	return obj
 
 def parse_flatfile(datafilename: str, formatfilename: str) -> List[T]:

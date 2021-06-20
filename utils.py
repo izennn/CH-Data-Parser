@@ -1,6 +1,6 @@
 import sys
 
-from typing import T
+from typing import Tuple, T
 from models import Spec
 
 '''
@@ -8,15 +8,18 @@ from models import Spec
 @param type: the type of value to evaluate to
 @return converted string to value
 '''
-def convert_string_to_type(string: str, type: str) -> T:
+def convert_string_to_type(string: str, type: str) -> Tuple[T, str]:
 	if type == "str":
-		return string.strip()
+		return (string.strip(), None)
 	elif type == "bool":
-		return string == "1"
+		if (string == "1" or string == "0"):
+			return (string == "1", None)
+		else:
+			return (None, "Improper data type for {}, expected {}".format(string, type))
 	elif type == "int":
-		return int(string)
+		return (int(string), None)
 	
-	return string
+	return (None, "Invalid type {}".format(type))
 
 '''
 A valid spec needs to have:
