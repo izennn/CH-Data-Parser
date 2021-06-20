@@ -1,7 +1,5 @@
 import sys
-from typing import List, Dict, T
-
-from models import Spec
+from typing import List, T
 
 from utils import convert_string_to_type, get_spec_list
 from validators import is_valid_input

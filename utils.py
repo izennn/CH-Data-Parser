@@ -40,8 +40,8 @@ def get_spec_list(filepointer) -> list:
 	for i, spec_line in enumerate(filepointer):
 		spec_fields = spec_line.strip().split(",")
 		if len(spec_fields) != 3:
-			#TODO: print error saying spec file improperly formatted
 			print("Incorrectly formatted specification file")
+			print("line {}: {}".format(i, spec_fields))
 			sys.exit()
 
 		if i == 0:

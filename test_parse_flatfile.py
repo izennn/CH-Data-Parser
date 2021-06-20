@@ -1,4 +1,6 @@
 import unittest
+import os
+
 from utils import get_spec_list
 from models import Spec
 from validators import has_correct_file_type, has_matching_format, has_correct_date_format
@@ -122,14 +124,13 @@ class TestFilename(unittest.TestCase):
 			self.assertEqual(ok, test["expected"])
 
 			
-
 class TestSpecFile(unittest.TestCase):
 
 	def test_gets_correct_spec_list_from_spec_file(self):
 		tests = [
 			{
 				"input": {
-					"filename": "./specs/zerowidthformat.csv"
+					"specfilename": "./specs/zerowidthformat.csv"
 				},
 				"expected": [
 					Spec("name", 10, "str"),
@@ -139,7 +140,7 @@ class TestSpecFile(unittest.TestCase):
 			},
 			{
 				"input": {
-					"filename": "./specs/fileformat1.csv"
+					"specfilename": "./specs/fileformat1.csv"
 				},
 				"expected": [
 					Spec("name", 10, "str"),
@@ -150,42 +151,60 @@ class TestSpecFile(unittest.TestCase):
 		]
 
 		for test in tests:
-			ff = open(test["input"]["filename"])
-			result = get_spec_list(ff)
-			ff.close()
+			# get result
+			fp = open(test["input"]["specfilename"])
+			result = get_spec_list(fp)
+			fp.close()
+			# remove created files
+			# os.remove(specfilename)
+			# test result == expected
 			self.assertEqual(result, test["expected"])
 
 class TestParseFile(unittest.TestCase):
+	
 	def test_normal_parse_file(self):
 		tests = [
 			{
 				"input": {
-					"datafile": "./data/zerowidthformat_2021-06-18.txt",
-					"specfile": "./specs/zerowidthformat.csv"
+					"datafile": "Foonyor   1  1\nBarzane   0-12\nQuuxitude 1103",
+					"specfile": '"column name", width, datatype\nname, 10, str\nvalid, 1, bool\ncount, 3, int'
 				},
-				"expected": [{'name': 'Foonyor', 'empty': '', 'valid': True}, {'name': 'Barzane', 'empty': '', 'valid': False}, {'name': 'Quuxitude', 'empty': '', 'valid': True}]
+				"expected": [{'name': 'Foonyor', 'valid': True, 'count': 1}, {'name': 'Barzane', 'valid': False, 'count': -12}, {'name': 'Quuxitude', 'valid': True, 'count': 103}]
 			},
 			{
 				"input": {
-					"datafile": "./data/fileformat1_2007-10-15.txt",
-					"specfile": "./specs/fileformat1.csv"
+					"datafile": "Foonyor   1\nBarzane   0\nQuuxitude 1",
+					"specfile": '"column name", width, datatype\nname, 10, str\nempty, 0, str\nvalid, 1, bool'
 				},
-				"expected": [{'name': 'Foonyor', 'valid': True, 'count': 1}, {'name': 'Barzane', 'valid': False, 'count': -12}, {'name': 'Quuxitude', 'valid': True, 'count': 103}]
+				"expected": [{'name': 'Foonyor', 'empty': '', 'valid': True}, {'name': 'Barzane', 'empty': '', 'valid': False}, {'name': 'Quuxitude', 'empty': '', 'valid': True}]
 			}
 		]
 
 		for test in tests:
-			datafilename = test["input"]["datafile"]
-			specfilename = test["input"]["specfile"]
+			datafilename = "./sampleformat2_2021-06-20.txt"
+			specfilename = "./sampleformat2.csv"
+			# make data file
+			datafilepointer = open(datafilename, "w+")
+			datafilepointer.write(test["input"]["datafile"])
+			datafilepointer.close()
+			# make spec file
+			specfilepointer = open(specfilename, "w+")
+			specfilepointer.write(test["input"]["specfile"])
+			specfilepointer.close()
+			# run function
 			result = parse_flatfile(datafilename, specfilename)
+			# remove created files
+			os.remove(datafilename)			
+			os.remove(specfilename)
+
 			self.assertEqual(result, test["expected"])
 
 	def test_parse_file_width_invalid_dataline(self):
 		tests = [
 			{
 				"input": {
-					"datafile": "./data/wronglengthdataformat_2021-06-18.txt",
-					"specfile": "./specs/wronglengthdataformat.csv"
+					"datafile": "Foonyor   1  1\nBarzane   0 -12\nQuuxitude 1103\nIzen      0100",
+					"specfile": '"column name", width, datatype\nname, 10, str\nvalid, 1, bool\ncount, 3, int'
 				},
 				"expected": [
 					{'name': 'Foonyor', 'valid': True, 'count': 1}, 
@@ -197,9 +216,22 @@ class TestParseFile(unittest.TestCase):
 		]
 
 		for test in tests:
-			datafilename = test["input"]["datafile"]
-			specfilename = test["input"]["specfile"]
+			datafilename = "./wronglengthdataformat_2021-06-18.txt"
+			specfilename = "./wronglengthdataformat.csv"
+			# make data file
+			datafilepointer = open(datafilename, "w+")
+			datafilepointer.write(test["input"]["datafile"])
+			datafilepointer.close()
+			# make spec file
+			specfilepointer = open(specfilename, "w+")
+			specfilepointer.write(test["input"]["specfile"])
+			specfilepointer.close()
+			# run function
 			result = parse_flatfile(datafilename, specfilename)
+			# remove created files
+			os.remove(datafilename)			
+			os.remove(specfilename)
+
 			self.assertEqual(result, test["expected"])
 
 if __name__ == '__main__':
